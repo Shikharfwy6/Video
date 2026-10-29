@@ -1,26 +1,30 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import {interpolate, useCurrentFrame} from 'remotion';
-import timing from './timing.json';
+import defaultTiming from './timing.json';
+import type {Timing} from './types';
 import {C, FONT} from './theme';
 
-const env = timing.envelope as number[];
-const fps = timing.fps;
-
-// Right-arm angle per section (negative = hand raised). Smoothly eased at each section start.
+// Right-arm angle per section (negative = hand raised). Eased at each section start.
 const ARM: Record<string, number> = {
   hook: -165, tip1: -135, tip2: -150, tip3: -130, tip4: -150, tip5: -135, cta: -170,
+  title: -165, how: -140, alt: -150, why: -130, amt: -145, mistake: -120,
 };
-const secs = timing.sections;
-const armInput: number[] = [];
-const armOutput: number[] = [];
-secs.forEach((s, i) => {
-  const f0 = Math.round(s.start * fps);
-  const prev = i === 0 ? ARM[s.key] : ARM[secs[i - 1].key];
-  armInput.push(f0, f0 + 14);
-  armOutput.push(prev, ARM[s.key]);
-});
 
-export const Character: React.FC = () => {
+export const Character: React.FC<{timing?: Timing}> = ({timing = defaultTiming as unknown as Timing}) => {
+  const env = timing.envelope;
+  const fps = timing.fps;
+  const {armInput, armOutput} = useMemo(() => {
+    const inp: number[] = [];
+    const out: number[] = [];
+    timing.sections.forEach((sec, i) => {
+      const f0 = Math.round(sec.start * fps);
+      const cur = ARM[sec.key] ?? -145;
+      const prev = i === 0 ? cur : ARM[timing.sections[i - 1].key] ?? -145;
+      inp.push(f0, f0 + 14);
+      out.push(prev, cur);
+    });
+    return {armInput: inp, armOutput: out};
+  }, [timing, fps]);
   const frame = useCurrentFrame();
   const a = env[Math.min(frame, env.length - 1)] ?? 0;
   const aPrev = env[Math.max(0, Math.min(frame - 1, env.length - 1))] ?? 0;

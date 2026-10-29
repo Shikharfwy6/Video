@@ -23,3 +23,8 @@ Font: Baloo 2 (Google Fonts) – pehli baar render par internet chahiye.
 1. Is folder ko GitHub repo mein push karo (branch `main`).
 2. Repo > Actions > "Render video" > Run workflow (ya push par apne-aap chalega).
 3. Khatam hone par run ke andar **Artifacts > video** se `video.mp4` download karo.
+
+## Dusra video: पंच-इन ज़ूम
+- Voiceover: `public/voice_punchin.mp3`, timing: `src/timing_punchin.json` (`python3 scripts/make_timing_punchin.py`)
+- Sirf yahi render karna ho: `npx remotion render PunchIn out/punchin.mp4`
+- Naya voiceover lagana ho toh `voice_punchin.mp3` badlo aur `scripts/make_timing_punchin.py` ke `SECTIONS` mein sentences voiceover ke hisaab se rakho.

@@ -1,26 +1,31 @@
 import React from 'react';
 import {useCurrentFrame} from 'remotion';
-import timing from './timing.json';
+import defaultTiming from './timing.json';
+import type {Timing} from './types';
 import {C, FONT} from './theme';
 import {pop} from './util';
 
 type W = {t: string; s: number; e: number};
 type Chunk = {words: W[]; s: number; e: number};
 
-const chunks: Chunk[] = [];
-timing.sections.forEach((sec) => {
-  let cur: W[] = [];
-  sec.words.forEach((w, i) => {
-    cur.push(w);
-    const last = i === sec.words.length - 1;
-    if (/[।,?!.…:]$/.test(w.t) || cur.length >= 4 || last) {
-      chunks.push({words: cur, s: cur[0].s, e: cur[cur.length - 1].e});
-      cur = [];
-    }
+const buildChunks = (timing: Timing): Chunk[] => {
+  const chunks: Chunk[] = [];
+  timing.sections.forEach((sec) => {
+    let cur: W[] = [];
+    sec.words.forEach((w, i) => {
+      cur.push(w);
+      const last = i === sec.words.length - 1;
+      if (/[।,?!.…:]$/.test(w.t) || cur.length >= 4 || last) {
+        chunks.push({words: cur, s: cur[0].s, e: cur[cur.length - 1].e});
+        cur = [];
+      }
+    });
   });
-});
+  return chunks;
+};
 
-export const Captions: React.FC = () => {
+export const Captions: React.FC<{timing?: Timing}> = ({timing = defaultTiming as unknown as Timing}) => {
+  const chunks = React.useMemo(() => buildChunks(timing), [timing]);
   const frame = useCurrentFrame();
   const t = frame / timing.fps;
 
